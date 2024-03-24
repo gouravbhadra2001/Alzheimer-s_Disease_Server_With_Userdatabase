@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "googleapis": "^134.0.0",
+    "mongodb": "^6.5.0",
+    "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.0"
+  },
+  "name": "server",
+  "version": "1.0.0",
+  "description": "This the backend for database",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "nodemon app.js"
+  },
+  "author": "Gourav Bhadra",
+  "license": "ISC"
+}
