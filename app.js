@@ -1,6 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
-const sendMail = require('./controllers/sendMail');
+//const sendMail = require('./controllers/sendMail');
 const cors = require('cors');
 const sendMailonSubscription = require('./controllers/sendMailOnSubscribe');
 const sendMailonUnSubscription = require('./controllers/sendMailOnUnSubscribe')
