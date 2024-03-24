@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
     res.send("This is the root page..");
 });
 
-app.post("/sendemail", sendMail);
+
 
 // Insert data route
 app.post("/insertData", async (req, res) => {
