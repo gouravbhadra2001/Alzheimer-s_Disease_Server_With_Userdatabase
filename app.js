@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 app.post("/insertData", async (req, res) => {
     try {
         await  client.connect();
-        const { name, email, subscribed, reviews, predictions, starval} =  req.body;
+        const { name, email, subscribed, reviews, predictions, chatHistory, starval} =  req.body;
 
         if (!name || !email) {
             return res.status(400).send("Name and email are required");
@@ -53,6 +53,7 @@ app.post("/insertData", async (req, res) => {
             "subscribed": subscribed,
                             "reviews": reviews,
                             "predictions": predictions,
+            "chatHistory":chatHistory,
                             "starval": starval
         };
 
