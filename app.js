@@ -1,6 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
-const sendMail = require('./controllers/sendMail');
+//const sendMail = require('./controllers/sendMail');
 const cors = require('cors');
 const sendMailonSubscription = require('./controllers/sendMailOnSubscribe');
 const sendMailonUnSubscription = require('./controllers/sendMailOnUnSubscribe')
@@ -23,13 +23,13 @@ app.get("/", (req, res) => {
     res.send("This is the root page..");
 });
 
-app.post("/sendemail", sendMail);
+
 
 // Insert data route
 app.post("/insertData", async (req, res) => {
     try {
         await  client.connect();
-        const { name, email, subscribed, reviews, predictions, starval} =  req.body;
+        const { name, email, subscribed, reviews, predictions, chatHistory, starval} =  req.body;
 
         if (!name || !email) {
             return res.status(400).send("Name and email are required");
@@ -53,6 +53,7 @@ app.post("/insertData", async (req, res) => {
             "subscribed": subscribed,
                             "reviews": reviews,
                             "predictions": predictions,
+            "chatHistory":chatHistory,
                             "starval": starval
         };
 
