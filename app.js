@@ -123,9 +123,7 @@ app.post("/subscribe", async (req, res) => {
     } catch (error) {
         console.error("Error in subscribing:", error);
         res.status(500).send("Internal Server Error");
-    } finally {
-        await client.close(); 
-    }
+    } 
 });
 
     
@@ -157,12 +155,198 @@ app.post("/unsubscribe", async (req, res) => {
     } catch (error) {
         console.error("Error unsubscribing:", error);
         res.status(500).send("Internal Server Error");
-    } finally {
-        await client.close(); 
-    }
+    } 
 });
 
 
+app.post("/postReview", async (req, res) => {
+    try {
+      await client.connect();
+      const db = client.db(process.env.DATABASE_NAME);
+      const col = db.collection(process.env.COLLECTION_NAME);
+      const { name, email, review } = req.body;
+      const store_time = new Date().toISOString(); // capturing storing time
+  
+      const filter = {
+        "name": name,
+        "email": email
+      };
+  
+      const result = await col.updateOne(filter, {
+        $push: {
+          "reviews": {
+            "reviewText": review.reviewText,
+            "submit_time": review.submit_time,
+            "store_time": store_time
+          }
+        }
+      });
+  
+      res.status(200).json({ message: "Prediction added successfully"});
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+   
+  });
+  
+
+
+app.post("/postPrediction",async (req, res)=>{
+    try {
+        await client.connect();
+        const db = client.db(process.env.DATABASE_NAME);
+        const col = db.collection(process.env.COLLECTION_NAME);
+        const { name, email, prediction} = req.body;
+        const store_time = new Date().toISOString(); // capturing storing time
+    
+        const filter = {
+          "name": name,
+          "email": email
+        };
+    
+        const result = await col.updateOne(filter, {
+          $push: {
+            "predictions": {
+                "uploadedImage": prediction.image,
+              "predictionText": prediction.predictionText,
+              "confidence":prediction.confidence,
+              "predict_time": prediction.predict_time,
+              "store_time": store_time
+            }
+          }
+        }).then();
+    
+        res.status(200).json({ message: "Prediction added successfully"});
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+     
+    });
+
+
+
+
+    app.post("/postChats",async (req, res)=>{
+        try {
+            await client.connect();
+            const db = client.db(process.env.DATABASE_NAME);
+            const col = db.collection(process.env.COLLECTION_NAME);
+            const { name, email, chatHistory } = req.body;
+            const store_time = new Date().toISOString(); // capturing storing time
+        
+            const filter = {
+              "name": name,
+              "email": email
+            };
+        
+            console.log(chatHistory)
+            const result = await col.updateOne(filter, {
+              $push: {
+                "chatHistory": {
+                    "userQuestion": chatHistory.userQuestion,
+                  "botResponse": chatHistory.botResponse,
+                  "response_time": chatHistory.response_time,
+                  "store_time": store_time
+                }
+              }
+            }).then();
+        
+            res.status(200).json({ message: "Chat added successfully"});
+          } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Internal server error" });
+          }
+         
+        });    
+
+
+        app.post("/predictionHistory", async (req, res) => {
+          try {
+            await client.connect();
+            const db = client.db(process.env.DATABASE_NAME);
+            const col = db.collection(process.env.COLLECTION_NAME);
+            const { name, email } = req.body;
+            const filter = { "name": name, "email": email };
+        
+            // Use findOne() to find a single document
+            const doc = await col.findOne(filter);
+        
+            if (!doc) {
+              // If no document found, return empty array or handle as needed
+              res.json([]);
+              return;
+            }
+        
+            // Extract predictions array from the found document
+            const predictionHistory = doc.predictions || [];
+        
+            res.json(predictionHistory);
+          } catch (error) {
+            console.error(error);
+            res.status(500).send("Internal Server Error");
+          }
+        });
+        
+
+        app.post("/chatHistory", async (req, res) => {
+          try {
+            await client.connect();
+            const db = client.db(process.env.DATABASE_NAME);
+            const col = db.collection(process.env.COLLECTION_NAME);
+            const { name, email } = req.body;
+            const filter = { "name": name, "email": email };
+        
+            // Use findOne() to find a single document
+            const doc = await col.findOne(filter);
+        
+            if (!doc) {
+              // If no document found, return empty array or handle as needed
+              res.json([]);
+              return;
+            }
+        
+            // Extract predictions array from the found document
+            const chatHistory = doc.chatHistory || [];
+        
+            res.json(chatHistory);
+          } catch (error) {
+            console.error(error);
+            res.status(500).send("Internal Server Error");
+          }
+        });
+        
+        app.post("/updateProfile", async (req, res) => {
+          try {
+              await client.connect();
+              const db = client.db(process.env.DATABASE_NAME);
+              const col = db.collection(process.env.COLLECTION_NAME);
+              const { name, email, bio, location } = req.body;
+              
+              // Define the filter to find the user
+              const filter = { "name": name, "email": email };
+      
+              // Use findOne to find a document matching the filter
+              const foundDocument = await col.findOne(filter);
+      
+              if (foundDocument === null) {
+                  // If document doesn't exist, insert it with the fields
+                  await col.updateOne({ "name": name, "email": email, "bio": bio, "location": location });
+                  res.send("Stored bio and location");
+              } else {
+                  // If document exists, update it with the new fields
+                  await col.updateOne(filter, { $set: { "bio": bio, "location": location } });
+                  res.send("Updated bio and location");
+              }
+          } catch (e) {
+              // Handle errors
+              console.error("Error finding/updating profile:", e);
+              res.status(500).send("Internal Server Error");
+          }
+      });
+      
+      
 app.get("/*", (req, res) => {
     res.send("SORRY, :( , 404 NOT FOUND");
 });
@@ -179,3 +363,5 @@ const start = async () => {
 };
 
 start();
+
+
